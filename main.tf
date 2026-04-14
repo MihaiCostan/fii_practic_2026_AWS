@@ -313,7 +313,7 @@ resource "aws_instance" "cloudpulse" {
     # 1. Install App dependencies
     yum update -y
     yum install -y python3-pip unzip
-    pip3 install flask requests 'boto3>=1.35.0' pytz prometheus-flask-exporter
+    pip3 install 'flask<3' 'werkzeug<3' gunicorn requests 'boto3>=1.35.0' pytz prometheus-flask-exporter
 
     mkdir -p /home/ec2-user/app
 
@@ -338,7 +338,7 @@ resource "aws_instance" "cloudpulse" {
     User=root
     WorkingDirectory=/home/ec2-user/app
     # Standard output/error redirected to app.log for Loki
-    ExecStart=/usr/bin/python3 /home/ec2-user/app/app.py
+    ExecStart=/usr/local/bin/gunicorn --workers 2 --threads 4 --bind 0.0.0.0:80 --timeout 30 app:app
     StandardOutput=append:/home/ec2-user/app/app.log
     StandardError=append:/home/ec2-user/app/app.log
     Restart=always

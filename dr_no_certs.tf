@@ -824,7 +824,7 @@ resource "aws_launch_template" "nc_dr_lt_primary" {
     exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     yum update -y
     yum install -y python3-pip unzip
-    pip3 install flask requests boto3 pytz prometheus-flask-exporter
+    pip3 install 'flask<3' 'werkzeug<3' gunicorn requests boto3 pytz prometheus-flask-exporter
     mkdir -p /home/ec2-user/app
     cat << 'PY_EOF' > /home/ec2-user/app/app.py
     ${templatefile("${path.module}/app.py.tftpl", {
@@ -842,7 +842,7 @@ resource "aws_launch_template" "nc_dr_lt_primary" {
     [Service]
     User=root
     WorkingDirectory=/home/ec2-user/app
-    ExecStart=/usr/bin/python3 /home/ec2-user/app/app.py
+    ExecStart=/usr/local/bin/gunicorn --workers 2 --threads 4 --bind 0.0.0.0:80 --timeout 30 app:app
     StandardOutput=append:/home/ec2-user/app/app.log
     StandardError=append:/home/ec2-user/app/app.log
     Restart=always
@@ -900,7 +900,7 @@ resource "aws_launch_template" "nc_dr_lt_secondary" {
     exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     yum update -y
     yum install -y python3-pip unzip
-    pip3 install flask requests boto3 pytz prometheus-flask-exporter
+    pip3 install 'flask<3' 'werkzeug<3' gunicorn requests boto3 pytz prometheus-flask-exporter
     mkdir -p /home/ec2-user/app
     cat << 'PY_EOF' > /home/ec2-user/app/app.py
     ${templatefile("${path.module}/app.py.tftpl", {
@@ -918,7 +918,7 @@ resource "aws_launch_template" "nc_dr_lt_secondary" {
     [Service]
     User=root
     WorkingDirectory=/home/ec2-user/app
-    ExecStart=/usr/bin/python3 /home/ec2-user/app/app.py
+    ExecStart=/usr/local/bin/gunicorn --workers 2 --threads 4 --bind 0.0.0.0:80 --timeout 30 app:app
     StandardOutput=append:/home/ec2-user/app/app.log
     StandardError=append:/home/ec2-user/app/app.log
     Restart=always

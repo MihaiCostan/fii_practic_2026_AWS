@@ -62,6 +62,10 @@ def _ask_bedrock(iid, az, count):
     result = json.loads(resp["body"].read())
     return result["output"]["message"]["content"][0]["text"].strip()
 
+@app.route('/favicon.ico')
+def favicon():
+    return Response(status=204)
+
 @app.route('/background-image')
 def bg():
     try:
